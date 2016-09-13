@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="app/app.js"></script>
+    <style>
+    body {
+        min-width: 1024px;
+    }
+    </style>
+</head>
+
+<body ng-app="app" ng-controller="base as b">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-3">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="GROUP" ng-model="b.groupInput" my-enter="b.addGroup()">
+                        </div>
+                        <ul class="list-unstyled">
+                            <li ng-repeat="val in b.groups">
+                                <div ng-click="b.selectGroup(val)">{{val.title}}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h3>{{b.currentGroup.title}}</h3>
+                        <input type="text" class="form-control" placeholder="UNIT" ng-model="b.unitInput" my-enter="b.addUnit()">
+                        <ul class="list-unstyled">
+                            <li ng-repeat="val in b.currentGroup.units">
+                                <div ng-click="b.selectUnit(val)">{{val.title}}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-9">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <input type="text" class="form-control" placeholder="lang" my-enter="b.addLang()" ng-model="b.langInput">
+                        <ul>
+                            <li ng-repeat="val in b.langs" ng-click='b.removeLang(val)'>{{val}}</li>
+                        </ul>
+                          <button ng-click="b.testSend()">aa</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <h3>{{b.currentUnit.title}}</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6" ng-repeat="val in b.currentUnit.words">
+                        <h3>{{val.lang}}</h3>
+                        <input type="text" class="form-control" placeholder="content" ng-model="val.content">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

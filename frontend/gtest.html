@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Microsoft JhengHei";
+    }
+    
+    * {
+        box-sizing: border-box;
+    }
+    
+    .ul-unstyle {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    #primary {
+        width: 100%;
+    }
+    
+    #map {
+        width: 100%;
+        height: 600px;
+    }
+    
+    #navi > ul::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+    
+    #navi > ul > li {
+        float: left;
+        width: 25%;
+        cursor: pointer;
+        padding: 10px;
+        text-align: center;
+        background: #FFF;
+        border-right: 1px solid #cdcdcd;
+    }
+    
+    #navi > ul > li:last-child {
+        border-right: none;
+    }
+    
+    #btn1 > i {
+        color: #fdd35c;
+    }
+    
+    #btn2 > i {
+        color: #4d4398;
+    }
+    
+    #btn3 >i {
+        color: #00947a;
+    }
+    
+    #btn4>i {
+        color: #00a1e9;
+    }
+    
+    #btn1:hover,
+    #btn1.active {
+        background: #fdd35c;
+        color: #FFF;
+    }
+    
+    #btn1:hover>i,
+    #btn1.active>i {
+        color: #FFF;
+    }
+    
+    #btn2:hover,
+    #btn2.active {
+        background: #4d4398;
+        color: #FFF;
+    }
+    
+    #btn2:hover>i,
+    #btn2.active>i {
+        color: #FFF;
+    }
+    
+    #btn3:hover,
+    #btn3.active {
+        background: #00947a;
+        color: #FFF;
+    }
+    
+    #btn3:hover>i,
+    #btn3.active>i {
+        color: #FFF;
+    }
+    
+    #btn4:hover,
+    #btn4.active {
+        background: #00a1e9;
+        color: #FFF;
+    }
+    
+    #btn4:hover>i,
+    #btn4.active>i {
+        color: #FFF;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="primary">
+        <div id="navi">
+            <ul class="ul-unstyle">
+                <li id="btn1"><i class="fa fa-bus" aria-hidden="true"></i> 交通</li>
+                <li id="btn2"><i class="fa fa-shopping-bag" aria-hidden="true"></i> 購物</li>
+                <li id="btn3"><i class="fa fa-cutlery" aria-hidden="true"></i> 餐廳</li>
+                <li id="btn4"><i class="fa fa-camera" aria-hidden="true"></i> 景點</li>
+            </ul>
+        </div>
+        <div id="map"></div>
+        <a href="javascript:ajaxTest()">更換地點測試</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+    var map;
+    var geocoder;
+    var infoWindow;
+    var service;
+    var markers = [
+        [],
+        [],
+        [],
+        []
+    ];
+
+    function ajaxTest() {
+        $.ajax({
+            url: "/getLocal",
+            method: "POST",
+            success: function(_d) {
+                console.log(_d);
+                for (var i = 0; i < _d.length; i++) {
+
+
+                    customer(_d[i]);
+
+                    /*
+                    google.maps.event.addListener(marker, 'click', function() {
+                        //console.log(place.name);
+                        infoWindow.setContent();
+
+                        infoWindow.open(map, this);
+                    });
+                    */
+                }
+            }
+
+        })
+    }
+
+    function customer(_obj) {
+        var marker = new google.maps.Marker({
+            map: map,
+            position: {
+                lng: _obj.loc.coordinates[0],
+                lat: _obj.loc.coordinates[1]
+            }
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+            //console.log(place.name);
+            infoWindow.setContent(_obj.name);
+
+            infoWindow.open(map, this);
+        });
+    }
+
+
+    var initShow = [0, 1, 0, 0]; //1為預載 0反之，[交通,購物,餐廳,景點];
+
+    var fn = [busEvent, shoppingEvent, foodEvent, cameraEvent];
+
+    var locate = "tokyo";
+    var icons = ["bus.png", "bags.png", "fastfood.png", "flag-export.png"];
+
+    function initMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            disableDefaultUI: false,
+            center: {
+                lng: 121.532704,
+                lat: 25.053731
+            }
+        });
+
+        var ma = new google.maps.Marker({
+            map: map,
+            position: {
+                lat: map.center.lat(),
+                lng: map.center.lng()
+            }
+        });
+
+        geocoder = new google.maps.Geocoder();
+        infoWindow = new google.maps.InfoWindow();
+        service = new google.maps.places.PlacesService(map);
+
+        //geocodeAddress(locate, geocoder, map);
+
+        for (var i = 0; i < 4; i++) {
+            btnAcitveProcess(i);
+        }
+
+        google.maps.event.addListenerOnce(map, 'idle', function() {
+            for (var i = 0; i < 4; i++) {
+                //btnAcitveProcess(i);
+                if (initShow[i]) {
+                    initShowProcess(i);
+                }
+
+            }
+        });
+
+    }
+
+    function btnAcitveProcess(num) {
+        $('#btn' + (num + 1)).click(function() {
+            if ($(this).hasClass('active')) {
+                setMapOnAll(null, num);
+                markers[num] = [];
+                $(this).removeClass('active');
+            } else {
+                fn[num](num);
+                $(this).addClass('active');
+            }
+        })
+    }
+
+    function btnActiveReset(num) {
+        $('#btn' + (num + 1)).removeClass('active');
+    }
+
+    function changePlace(_place) {
+        clearAllMarker();
+        geocodeAddress(_place, geocoder, map);
+
+        for (var i = 0; i < 4; i++) {
+            btnActiveReset(i);
+        }
+
+    }
+
+
+    function geocodeAddress(address, geocoder, resultsMap) {
+        geocoder.geocode({
+            'address': address
+        }, function(results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+                resultsMap.setCenter(results[0].geometry.location);
+
+                var marker = new google.maps.Marker({
+                    map: resultsMap,
+                    position: results[0].geometry.location
+                });
+
+            } else {
+                alert('Geocode was not successful for the following reason: ' + status);
+            }
+        });
+    }
+
+
+
+    function createMarker(place, num) {
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+            map: map,
+            position: place.geometry.location,
+            icon: "images/" + icons[num]
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+            //console.log(place.name);
+            infoWindow.setContent(place.name);
+
+            infoWindow.open(map, this);
+        });
+
+        return marker;
+    }
+
+    function busEvent(num) {
+        clickProcess(['train_station'], num);
+    }
+
+    function shoppingEvent(num) {
+        clickProcess(['shopping_mall'], num);
+    }
+
+    function foodEvent(num) {
+        clickProcess(['food'], num);
+    }
+
+    function cameraEvent(num) {
+        clickProcess(['amusement_park', 'aquarium', 'art_gallery', 'casino', 'hindu_temple', 'night_club', 'park', 'spa', 'zoo', 'movie_theater', 'museum'], num);
+    }
+
+    function setMapOnAll(_map, num) {
+
+        for (var i = 0; i < markers[num].length; i++) {
+            markers[num][i].setMap(_map);
+        }
+    }
+
+    function clearAllMarker() {
+
+        for (var i = 0; i < markers.length; i++) {
+            for (var j = 0; j < markers[i].length; j++) {
+                markers[i][j].setMap(null);
+            }
+
+            markers[i] = [];
+        }
+    }
+
+    function clickProcess(types, num) {
+        setMapOnAll(null, num);
+        markers[num] = [];
+
+        var pyrmont = {
+            lat: map.center.lat(),
+            lng: map.center.lng()
+        };
+
+        service.nearbySearch({
+            location: pyrmont,
+            radius: 1000,
+            types: types
+        }, processResults);
+
+        function processResults(results, status, pagination) {
+            if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                return;
+            } else {
+                for (var i = 0; i < results.length; i++) {
+                    markers[num].push(createMarker(results[i], num));
+                }
+            }
+        }
+    }
+
+    function initShowProcess(num) {
+        $('#btn' + (num + 1)).addClass('active');
+        fn[num](num);
+    }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB4iF-sbQ8jILkuFHfvcNSkytxmtkzppYA&callback=initMap&libraries=places&language=zh-TW">
+    </script>
+</body>
+
+</html>
