@@ -1,4 +1,3 @@
-
 var main = require('./handlers/main.js');
 
 module.exports = function(app) {
@@ -7,10 +6,11 @@ module.exports = function(app) {
         res.sendFile(global.appRoot + '/index.html');
     });
 
-   
+
     app.post('/saveData', main.getAndCreateFile);
 
-    app.post('/getLocal',main.getLocal);
+    app.post('/getLocal', main.getLocal);
+    app.get('/test', main.test);
 }
 
 

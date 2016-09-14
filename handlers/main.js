@@ -2,15 +2,10 @@ var fs = require('fs');
 var br = require('os').EOL;
 var mkdirp = require('mkdirp');
 var Q = require("q");
-var mongoose = require('mongoose');
+//var mongoose = require('mongoose');
+var gps = require('../models/gps_model');
 
-var LocationSchema = mongoose.Schema({
-    loc: Object,
-    name: String,
-    category: String
-});
-
-var local = mongoose.model('location', LocationSchema, "places");
+//local = gps.gps();
 
 
 exports.getAndCreateFile = function(req, res) {
@@ -127,21 +122,17 @@ exports.getAndCreateFile = function(req, res) {
 
 exports.getLocal = function(req, res) {
 
-    local.find({
-        loc: {
-            $nearSphere: {
-                $geometry: {
-                    type: "Point",
-                    coordinates: [121.532721, 25.053751]
-                },
-                $minDistance: 0,
-                $maxDistance: 5000
-            }
-        }
-    }, function(err, re) {
-        
+    gps.getLocal(function(err, re) {       
         res.json(200, re);
     })
 
-
 }
+
+exports.test = function (req,res) { 
+   ttt.getLocal(function(err, re) {
+       
+        res.json(200, re);
+    })
+}
+
+
