@@ -4,70 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="app/app.js"></script>
-    <style>
-    body {
-        min-width: 1024px;
-    }
-    </style>
+    <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="css/default.css">
 </head>
 
 <body ng-app="app" ng-controller="base as b">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-xs-3">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="GROUP" ng-model="b.groupInput" my-enter="b.addGroup()">
-                        </div>
-                        <ul class="list-unstyled">
-                            <li ng-repeat="val in b.groups">
-                                <div ng-click="b.selectGroup(val)">{{val.title}}</div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <h3>{{b.currentGroup.title}}</h3>
-                        <input type="text" class="form-control" placeholder="UNIT" ng-model="b.unitInput" my-enter="b.addUnit()">
-                        <ul class="list-unstyled">
-                            <li ng-repeat="val in b.currentGroup.units">
-                                <div ng-click="b.selectUnit(val)">{{val.title}}</div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+    <div id="debug">
+        <div>change mode : {{b.editMode}}</div>
+    </div>
+    <div id="top_navi">
+        <button ng-click="b.testSend()">output</button>
+        <button my-edit-button="b.editMode"></button>
+        <button ng-click="b.triggerLightbox()">light box</button>
+    </div>
+    <div id="left">
+        <div>
+            <div>
+                <input type="text" placeholder="GROUP" ng-model="b.groupInput" my-enter="b.addGroup()">
             </div>
-            <div class="col-xs-9">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <input type="text" class="form-control" placeholder="lang" my-enter="b.addLang()" ng-model="b.langInput">
-                        <ul>
-                            <li ng-repeat="val in b.langs" ng-click='b.removeLang(val)'>{{val}}</li>
-                        </ul>
-                          <button ng-click="b.testSend()">aa</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <h3>{{b.currentUnit.title}}</h3>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-6" ng-repeat="val in b.currentUnit.words">
-                        <h3>{{val.lang}}</h3>
-                        <input type="text" class="form-control" placeholder="content" ng-model="val.content">
-
-                    </div>
-                </div>
-            </div>
+            <ul class='ul_unstyle mList'>
+                <li ng-repeat="val in b.groups">
+                    <div ng-click="b.selectGroup(val)">{{val.title}}</div>
+                    <button ng-if='b.editMode' ng-click="b.flagBox(b.msg.del_group,b.deleteGroup,val)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div ng-if="b.currentGroup">
+            <h3>{{b.currentGroup.title}}</h3>
+            <input type="text" placeholder="UNIT" ng-model="b.unitInput" my-enter="b.addUnit()">
+            <ul class='ul_unstyle mList'>
+                <li ng-repeat="val in b.currentGroup.units">
+                    <div ng-click="b.selectUnit(val)">{{val.title}}</div>
+                    <button ng-if='b.editMode' ng-click="b.flagBox(b.msg.del_unit,b.deleteUnit,val)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
+    <div id="right">
+        <div>
+            <input type="text" placeholder="lang" my-enter="b.addLang()" ng-model="b.langInput">
+            <ul class='ul_unstyle lang_list'>
+                <li ng-repeat="val in b.langs">
+                    <span>{{val}}</span>
+                    <button ng-if='b.editMode' ng-click="b.flagBox(b.msg.del_lang,b.removeLang,val)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <h3>{{b.currentUnit.title}}</h3>
+        </div>
+        <div class="col-sm-6" ng-repeat="val in b.currentUnit.words">
+            <h3>{{val.lang}}</h3>
+            <input type="text" placeholder="content" ng-model="val.content">
+        </div>
+    </div>  
+    <div id="lbox" light-box="b.flagBoxTemp" ng-if="b.flagBoxTemp"></div>
 </body>
 
 </html>
