@@ -1,6 +1,14 @@
 var app = angular.module('app', ['datas']);
 
-app.controller("base", ["data_schema", "toServer", function(data_schema, toServer) {
+app.factory('_', ['$window',
+    function($window) {
+        // place lodash include before angular
+        return $window._;
+    }
+])
+
+
+app.controller("base", ["data_schema", "toServer", "_", function(data_schema, toServer, _) {
 
     var _self = this;
 
@@ -8,8 +16,8 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
 
     _self.msg = {
         del_group: "did you want to delete group ?",
-         del_unit: "did you want to delete unit ?",
-         del_lang: "did you want to delete language ?"
+        del_unit: "did you want to delete unit ?",
+        del_lang: "did you want to delete language ?"
     }
 
     _self.groups = [];
@@ -20,6 +28,13 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
     _self.editMode = false;
 
     _self.flagBoxTemp = false;
+
+    _self.editData = null;
+
+    _self.editThisData = function(val){
+        console.log(val);
+         _self.editData = val;
+    }
 
 
     _self.addGroup = function() {
@@ -51,8 +66,9 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
 
     _self.deleteGroup = function(val) {
         var _idx = _self.groups.indexOf(val);
-        _self.groups.splice(_idx, 1);
-        _self.currentGroup = '';
+        delete _self.groups[_idx];
+        _self.currentGroup = null;
+        _self.currentUnit = null;
     }
 
     _self.selectUnit = function(val) {
@@ -63,7 +79,7 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
         var _idx = _self.groups.indexOf(_self.currentGroup);
         var _unitIdx = _self.groups[_idx].units.indexOf(val);
         _self.groups[_idx].units.splice(_unitIdx, 1);
-        _self.currentUnit = '';
+        _self.currentUnit = null;
     }
 
     _self.triggerLightbox = function() {
@@ -84,20 +100,20 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
     }
 
     _self.addLang = function() {
-        if (!_self.langInput) {
+        if (!_self.langInput || _self.langs.indexOf(_self.langInput) > -1) {
             return;
         }
 
         _self.langs.push(_self.langInput);
 
-        for (var i = 0; i < _self.groups.length; i++) {
-            for (var j = 0; j < _self.groups[i].units.length; j++) {
+        _.forEach(_self.groups, function(_g) {
+            _.forEach(_g.units, function(_u) {
                 var w = angular.copy(data_schema.word_data);
                 w.lang = _self.langInput;
-                _self.groups[i].units[j].words.push(w);
+                _u.words.push(w);
+            })
 
-            }
-        }
+        })
 
         _self.langInput = null;
 
@@ -107,8 +123,8 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
 
         var idx = _self.langs.indexOf(val);
 
-        _self.langs.splice(idx, 1);
-
+        _self.langs.splice(idx, 1);     
+        
         for (var i = 0; i < _self.groups.length; i++) {
             for (var j = 0; j < _self.groups[i].units.length; j++) {
                 for (var k = 0; k < _self.groups[i].units[j].words.length; k++) {
@@ -121,6 +137,7 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
                 }
             }
         }
+        
     }
 
 
@@ -132,11 +149,11 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
         var _d = angular.copy(data_schema.unit_data);
         _d.title = _self.unitInput;
 
-        for (var i = 0; i < _self.langs.length; i++) {
+        _.forEach(_self.langs, function(value, key) {
             var _w = angular.copy(data_schema.word_data);
-            _w.lang = _self.langs[i];
+            _w.lang = value;
             _d.words.push(_w);
-        }
+        })
 
         _self.currentGroup.units.push(_d);
 
@@ -145,17 +162,8 @@ app.controller("base", ["data_schema", "toServer", function(data_schema, toServe
 
 
     function checkDuplicateTitle(_val, _arr) {
-        var has = false;
-
-        for (var i = 0; i < _arr.length; i++) {
-
-            if (_arr[i].title == _val) {
-                has = true;
-            }
-        }
-
-        return !has;
-
+        var _s = _.find(_arr, { title: _val });
+        return !_s;
     }
 
     _self.testSend = function() {
@@ -235,7 +243,7 @@ app.directive('lightBox', ['$compile', function($compile) {
                 outputContent += "<button ng-click='cancel()'>Cancel</button><button ng-click='delete()'>Delete</button>";
             } else {
                 outputContent += "<button ng-click='cancel()'>Ok</button>";
-            }          
+            }
 
             scope.cancel = function() {
                 scope.process = "";

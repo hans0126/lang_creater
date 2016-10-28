@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
+    <script src="bower_components/lodash/lodash.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="app/app.js"></script>
     <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css">
@@ -27,9 +28,14 @@
             <ul class='ul_unstyle mList'>
                 <li ng-repeat="val in b.groups">
                     <div ng-click="b.selectGroup(val)">{{val.title}}</div>
-                    <button ng-if='b.editMode' ng-click="b.flagBox(b.msg.del_group,b.deleteGroup,val)">
-                        <i class="fa fa-times" aria-hidden="true"></i>
-                    </button>
+                    <div class="btn-group">
+                        <button ng-if='b.editMode' ng-click="b.editThisData(val)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button ng-if='b.editMode' ng-click="b.flagBox(b.msg.del_group,b.deleteGroup,val)">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -44,6 +50,10 @@
                     </button>
                 </li>
             </ul>
+        </div>
+        <div ng-if="b.editData">
+            <input type="text" ng-model="b.editData.title">
+            <button>accept</button>
         </div>
     </div>
     <div id="right">
@@ -65,7 +75,7 @@
             <h3>{{val.lang}}</h3>
             <input type="text" placeholder="content" ng-model="val.content">
         </div>
-    </div>  
+    </div>
     <div id="lbox" light-box="b.flagBoxTemp" ng-if="b.flagBoxTemp"></div>
 </body>
 
